@@ -5,10 +5,11 @@ module Basics (
  , module Basics.Reasoning
  , module Basics.Unreachable
  , Rank, Priority
+ , undefined
  ) where
 
 import Basics.Bool
-import Basics.Nat hiding ((>=))
+import Basics.Nat
 import Basics.Ordering
 import Basics.Reasoning
 import Basics.Unreachable

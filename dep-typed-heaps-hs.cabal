@@ -36,6 +36,7 @@ library
                     Basics.Ordering
                     Basics.Reasoning
                     Basics.Unreachable
+                    TwoPassMerge.NoProofs
   build-depends:    base,
                     singletons >= 1.0
   ghc-options:      -Wall

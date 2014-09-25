@@ -19,9 +19,14 @@ data Nat :: * where
 
 $(genSingletons [ ''Nat ])
 
--- We define a constant 1 as it will be useful later on
-one :: Nat
-one = Succ Zero
+-- We define some natural numbers as they will be useful later on
+zero, one, two, three, four, five :: Nat
+zero  = Zero
+one   = Succ Zero
+two   = Succ one
+three = Succ two
+four  = Succ three
+five  = Succ four
 
 -- Addition
 $(promote [d|

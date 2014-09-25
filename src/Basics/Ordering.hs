@@ -7,7 +7,7 @@
 {-# LANGUAGE TypeFamilies        #-}
 module Basics.Ordering where
 
-import Basics.Nat hiding ((>=))
+import Basics.Nat
 
 import Data.Singletons
 

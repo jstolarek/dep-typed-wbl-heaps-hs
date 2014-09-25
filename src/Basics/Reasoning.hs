@@ -7,11 +7,9 @@ module Basics.Reasoning where
 
 import Data.Singletons
 
-import Basics.Nat hiding ((>=))
+import Basics.Nat
 import Basics.Ordering
 import Basics.Unreachable
-
-import Prelude (undefined)
 
 data PropEq :: k -> k -> * where
   Refl :: PropEq x x
