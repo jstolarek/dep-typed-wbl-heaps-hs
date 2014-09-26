@@ -361,6 +361,7 @@ merge h1@(Node p1 _ l1 r1)
             r2Rank = rank r2
             h1Rank = rank h1
             h2Rank = rank h2
+
 -- We require that inserting an element into the heap increases its
 -- size by one. As previously we define insert as merge and a
 -- singleton heap. Size of singleton heap is (suc zero), while already
