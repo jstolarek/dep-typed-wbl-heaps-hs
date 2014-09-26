@@ -283,9 +283,9 @@ heap'' = insertB' sZero   GeZ
 -- element being inserted and bound on the Heap we insert into match.
 
 -- Again, findMin and deletMin are incomplete
---findMin :: forall (p :: Nat) (b :: Nat). Heap p -> Sing b
---findMin Empty            = undefined
---findMin (Node p _ _ _ _) = p
+findMin :: forall (p :: Nat). Heap p -> Nat
+findMin Empty            = undefined
+findMin (Node p _ _ _ _) = fromSing p
 
 -- deleteMin requires a bit more work than previously. First, notice
 -- that the bound placed on the input and output heaps is the
