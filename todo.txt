@@ -1,0 +1,13 @@
+write readme
+add comment headers everywhere:: update year, university name and link to repo
+strip dependencies to singletons
+remove references to my paper
+geTrans -> geqTrans
+geSym -> geqSym
+
+agda diferences:
+awkward names because there is no unicdoe, agda's syntax is more flexible
+can't pattern match on implicit args because there are no implicit args
+nonsenses possible using undefined
+no commenon language for types and terms, which means we need to use separate functions at types and terms and together with singletons this is a mess
+haskell pattern matches don't benefit from dependent types
