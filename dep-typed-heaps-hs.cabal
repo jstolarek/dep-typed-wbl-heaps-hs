@@ -36,6 +36,7 @@ library
                     Basics.Ordering
                     Basics.Reasoning
                     Basics.Unreachable
+                    TwoPassMerge.CombinedProofs
                     TwoPassMerge.NoProofs
                     TwoPassMerge.RankProof
                     TwoPassMerge.PriorityProof
