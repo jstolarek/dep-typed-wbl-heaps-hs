@@ -2,6 +2,7 @@
 {-# LANGUAGE GADTs                #-}
 {-# LANGUAGE KindSignatures       #-}
 {-# LANGUAGE NoImplicitPrelude    #-}
+{-# LANGUAGE ScopedTypeVariables  #-}
 {-# LANGUAGE TemplateHaskell      #-}
 {-# LANGUAGE TypeFamilies         #-}
 {-# LANGUAGE TypeOperators        #-}
@@ -20,22 +21,26 @@ data Nat :: * where
 $(genSingletons [ ''Nat ])
 
 -- We define some natural numbers as they will be useful later on
-zero, one, two, three, four, five :: Nat
-zero  = Zero
-one   = Succ Zero
-two   = Succ one
-three = Succ two
-four  = Succ three
-five  = Succ four
+zero :: Nat
+zero = Zero
 
--- Addition
 $(promote [d|
-  (+) :: Nat -> Nat -> Nat
-  Zero     + m = m
-  (Succ n) + m = Succ (n + m)
+ one, two, three, four, five :: Nat
+ one   = Succ Zero
+ two   = Succ one
+ three = Succ two
+ four  = Succ three
+ five  = Succ four
  |])
 
-infix 6 +
+ -- Addition
+$(singletons [d|
+ (+) :: Nat -> Nat -> Nat
+ Zero     + m = m
+ (Succ n) + m = Succ (n + m)
+ |])
+
+infix 6 +, %:+
 
 (<) :: Nat -> Nat -> Bool
 _ < Zero = False
