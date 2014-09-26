@@ -38,6 +38,7 @@ library
                     Basics.Unreachable
                     TwoPassMerge.NoProofs
                     TwoPassMerge.RankProof
+                    TwoPassMerge.PriorityProof
   build-depends:    base,
                     singletons >= 1.0
   ghc-options:      -Wall

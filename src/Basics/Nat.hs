@@ -24,17 +24,18 @@ $(genSingletons [ ''Nat ])
 zero :: Nat
 zero = Zero
 
-$(promote [d|
+sZero :: Sing Zero
+sZero = SZero
+
+$(singletons [d|
  one, two, three, four, five :: Nat
  one   = Succ Zero
  two   = Succ one
  three = Succ two
  four  = Succ three
  five  = Succ four
- |])
 
  -- Addition
-$(singletons [d|
  (+) :: Nat -> Nat -> Nat
  Zero     + m = m
  (Succ n) + m = Succ (n + m)
