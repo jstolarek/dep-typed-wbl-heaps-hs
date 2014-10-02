@@ -1,3 +1,12 @@
+----------------------------------------------------------------------
+-- Copyright: 2013, Jan Stolarek, Lodz University of Technology     --
+--                                                                  --
+-- License: See LICENSE file in root of the repo                    --
+-- Repo address: https://github.com/jstolarek/dep-typed-wbl-heaps   --
+--                                                                  --
+-- Definition of natural numbers and operations on them.            --
+----------------------------------------------------------------------
+
 {-# LANGUAGE DataKinds            #-}
 {-# LANGUAGE GADTs                #-}
 {-# LANGUAGE KindSignatures       #-}
@@ -43,6 +52,7 @@ $(singletons [d|
 
 infix 6 +, %:+
 
+-- Comparisons
 (<) :: Nat -> Nat -> Bool
 _ < Zero = False
 Zero < Succ _ = True
