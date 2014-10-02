@@ -1,8 +1,8 @@
 ----------------------------------------------------------------------
--- Copyright: 2013, Jan Stolarek, Lodz University of Technology     --
+-- Copyright: 2014, Jan Stolarek, Politechnika Łódzka     --
 --                                                                  --
 -- License: See LICENSE file in root of the repo                    --
--- Repo address: https://github.com/jstolarek/dep-typed-wbl-heaps   --
+-- Repo address: https://github.com/jstolarek/dep-typed-wbl-heaps-hs   --
 --                                                                  --
 -- Weight biased leftist heap that proves rank invariant and uses   --
 -- a single-pass merging algorithm.                                 --
@@ -16,7 +16,7 @@
 {-# LANGUAGE TypeOperators       #-}
 module SinglePassMerge.RankProof where
 
-import Data.Singletons
+
 
 import Basics
 -- We import rank proofs conducted earlier - they will be re-used.
@@ -45,7 +45,7 @@ rank (Node _ _ l r) = SSucc (rank l %:+ rank r)
 --     b) constructing a node by swapping l and r subtrees (when rank
 --        of r was greater than rank of l). We had to prove that:
 --
---                    suc (a + b) ≡ suc (b + a)
+--                    suc (a + b) :~: suc (b + a)
 --
 --        This proof is supplied by a function makeT-lemma.
 --
@@ -57,7 +57,7 @@ rank (Node _ _ l r) = SSucc (rank l %:+ rank r)
 --
 --     b) h2 is empty. We had to prove that:
 --
---                 h1 ≡ h1 + 0
+--                 h1 :~: h1 + 0
 --
 --        This proof is supplied by +0 (in Basics.Reasoning) and is
 --        inlined in the definition of merge. See [merge, proof 0b].
@@ -65,7 +65,7 @@ rank (Node _ _ l r) = SSucc (rank l %:+ rank r)
 --     c) priority p1 is higher than p2. We had to prove:
 --
 --            suc (l1 + (r1 + suc (l2 + r2)))
---                           ≡ suc ((l1 + r1) + suc (l2 + r2))
+--                           :~: suc ((l1 + r1) + suc (l2 + r2))
 --
 --        This proof is supplied by proof-1 (renamed to proof-1a in
 --        this module). See [merge, proof 1] for details.
@@ -73,7 +73,7 @@ rank (Node _ _ l r) = SSucc (rank l %:+ rank r)
 --     d) priority p2 is higher than p1. We had to prove:
 --
 --            suc (l2 + (r2  + suc (l1 + r1)))
---                           ≡ suc ((l1 + r1) + suc (l2 + r2))
+--                           :~: suc ((l1 + r1) + suc (l2 + r2))
 --
 --        This proof is supplied by proof-2 (renamed to proof-2a in
 --        this module). See [merge, proof 2] for details.
@@ -95,28 +95,28 @@ rank (Node _ _ l r) = SSucc (rank l %:+ rank r)
 --      parameters passed to it. Required proof is:
 --
 --            suc (l1 + (r1 + suc (l2 + r2)))
---                           ≡ suc ((l1 + r1) + suc (l2 + r2))
+--                           :~: suc ((l1 + r1) + suc (l2 + r2))
 --
 --   2) case d described in [Single-pass merging algorithm]. Call to
 --      makeT would swap left and right when creating a node from
 --      parameters passed to it. Required proof is:
 --
 --            suc ((r1 + suc (l2 + r2)) + l1)
---                           ≡ suc ((l1 + r1) + suc (l2 + r2))
+--                           :~: suc ((l1 + r1) + suc (l2 + r2))
 --
 --   3) case e described in [Single-pass merging algorithm]. Call to
 --      makeT would not swap left and right when creating a node from
 --      parameters passed to it. Required proof is:
 --
 --            suc (l2 + (r2  + suc (l1 + r1)))
---                           ≡ suc ((l1 + r1) + suc (l2 + r2))
+--                           :~: suc ((l1 + r1) + suc (l2 + r2))
 --
 --   4) case f described in [Single-pass merging algorithm]. Call to
 --      makeT would swap left and right when creating a node from
 --      parameters passed to it. Required proof is:
 --
 --            suc ((r2 + suc (l1 + r1)) + l2)
---                           ≡ suc ((l1 + r1) + suc (l2 + r2))
+--                           :~: suc ((l1 + r1) + suc (l2 + r2))
 --
 -- First of all we must note that proofs required in cases 1 and 3 are
 -- exactly the same as in the two-pass merging algorithm. This allows
@@ -141,18 +141,18 @@ rank (Node _ _ l r) = SSucc (rank l %:+ rank r)
 -- reflected in the types. Now, if we could prove that:
 --
 --            suc ((r1 + suc (l2 + r2)) + l1)
---                           ≡ suc (l1 + (r1 + suc (l2 + r2)))
+--                           :~: suc (l1 + (r1 + suc (l2 + r2)))
 --
 -- and
 --
 --            suc ((r2 + suc (l1 + r1)) + l2)
---                           ≡ suc (l2 + (r2  + suc (l1 + r1)))
+--                           :~: suc (l2 + (r2  + suc (l1 + r1)))
 --
 -- then we could use transitivity to combine these new proofs with old
 -- proof-1a and proof-2a. If we abstract the parameters in the above
 -- equalities we see that the property we need to prove is:
 --
---                    suc (a + b) ≡ suc (b + a)
+--                    suc (a + b) :~: suc (b + a)
 --
 -- And that happens to be makeT-lemma! New version of merge was
 -- created by inlining calls to make and now it turns out we can

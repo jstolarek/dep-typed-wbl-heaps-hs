@@ -29,12 +29,12 @@ source-repository head
 
 library
   hs-source-dirs:   src
---  exposed-modules:
-  other-modules:    Basics
+  exposed-modules:  Basics
                     Basics.Bool
                     Basics.Nat
                     Basics.Ordering
                     Basics.Reasoning
+                    Basics.Sing
                     Basics.Unreachable
                     SinglePassMerge.CombinedProofs
                     SinglePassMerge.NoProofs
@@ -44,7 +44,5 @@ library
                     TwoPassMerge.NoProofs
                     TwoPassMerge.PriorityProof
                     TwoPassMerge.RankProof
-  build-depends:    base,
-                    singletons >= 1.0
+  build-depends:    base
   ghc-options:      -Wall
-                    -O0

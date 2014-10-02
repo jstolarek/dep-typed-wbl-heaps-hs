@@ -1,3 +1,14 @@
+----------------------------------------------------------------------
+-- Copyright: 2014, Jan Stolarek, Politechnika Łódzka     --
+--                                                                  --
+-- License: See LICENSE file in root of the repo                    --
+-- Repo address: https://github.com/jstolarek/dep-typed-wbl-heaps-hs   --
+--                                                                  --
+-- Weight biased leftist heap that proves rank invariant: size of   --
+-- left subtree of a node is not smaller than size of right         --
+-- subtree. Uses a two-pass merging algorithm.                      --
+----------------------------------------------------------------------
+
 {-# LANGUAGE DataKinds           #-}
 {-# LANGUAGE GADTs               #-}
 {-# LANGUAGE KindSignatures      #-}
@@ -6,7 +17,7 @@
 {-# LANGUAGE TypeOperators       #-}
 module TwoPassMerge.RankProof where
 
-import Data.Singletons
+
 
 import Basics
 
@@ -83,7 +94,7 @@ singleton p = Node p GeZ Empty Empty
 --  2) size of r is ≥ than size of l: in this case we swap left and
 --     right subtrees. This requires us to prove that:
 --
---       suc (r + l) ≡ suc (l + r)
+--       suc (r + l) :~: suc (l + r)
 --
 --     That proof is done using congruence on suc function and
 --     commutativity of addition. We will define that proof as
@@ -132,8 +143,8 @@ makeT lRank rRank p l r = case order lRank rRank of
 -- algorithm]) produce heap of required size, which is h1 + h2. Since
 -- in the proofs we will always operate on l1, r1, l2 and r2 we have:
 --
---   h1 + h2 ̄≡ suc (l1 + r1) + suc (l2 + r2)
---           ≡ suc ((l1 + r1) + suc (l2 + r2))
+--   h1 + h2 ̄:~: suc (l1 + r1) + suc (l2 + r2)
+--           :~: suc ((l1 + r1) + suc (l2 + r2))
 --
 -- (Second transformation comes from definition of +). This is the
 -- expected size and therefore the final result we must prove in every
@@ -145,7 +156,7 @@ makeT lRank rRank p l r = case order lRank rRank of
 -- Note [merge, proof 0a]
 -- ~~~~~~~~~~~~~~~~~~~~~~
 --
--- h1 ≡ 0, therefore: h1 + h2 ≡ 0 + h2 ≡ h2 ∎
+-- h1 :~: 0, therefore: h1 + h2 :~: 0 + h2 :~: h2 ∎
 --
 -- This is definitional equality based on _+_
 --
@@ -154,15 +165,15 @@ makeT lRank rRank p l r = case order lRank rRank of
 -- Note [merge, proof 0b]
 -- ~~~~~~~~~~~~~~~~~~~~~~
 --
--- h2 ≡ 0, therefore expected size is h1 + h2 ≡ h1 + 0. We need to
+-- h2 :~: 0, therefore expected size is h1 + h2 :~: h1 + 0. We need to
 -- show that:
 --
---    h1 ≡ h1 + 0
+--    h1 :~: h1 + 0
 --
 -- This is a simple statement that 0 is right identity of addition. We
 -- proved that as one of basic properties of addition in
 -- Basics.Reasoning module, except our proof had the sides of equality
--- reversed, ie. we proved a + 0 ≡ a, not a ≡ a + 0). We use symmetry
+-- reversed, ie. we proved a + 0 :~: a, not a :~: a + 0). We use symmetry
 -- to construct a proof of latter from the former.
 --
 -- ∎
@@ -186,7 +197,7 @@ makeT lRank rRank p l r = case order lRank rRank of
 --
 -- Formally:
 --
---   suc (l1 + (r1 + suc (l2 + r2))) ≡ suc ((l1 + r1) + suc (l2 + r2))
+--   suc (l1 + (r1 + suc (l2 + r2))) :~: suc ((l1 + r1) + suc (l2 + r2))
 --
 -- Recall that RHS of this equality comes from [Proving merge]. We
 -- begin proof with congruence on suc:
@@ -195,11 +206,11 @@ makeT lRank rRank p l r = case order lRank rRank of
 --
 -- where X proves
 --
---   l1 + (r1 + suc (l2 + r2)) ≡ (l1 + r1) + suc (l2 + r2)
+--   l1 + (r1 + suc (l2 + r2)) :~: (l1 + r1) + suc (l2 + r2)
 --
 -- Substituting a = l1, b = r1 and c = suc (l2 + r2) we have
 --
---   a + (b + c) ≡ (a + b) + c
+--   a + (b + c) :~: (a + b) + c
 --
 -- Which is associativity of addition that we have already proved in
 -- Basics.Reasoning.
@@ -228,17 +239,17 @@ proof1 l1 r1 l2 r2 = cong SSucc (plusAssoc l1 r1 (SSucc (l2 %:+ r2)))
 --
 -- Formally:
 --
---   suc (l2 + (r2 + suc (l1 + r1))) ≡ suc ((l1 + r1) + suc (l2 + r2))
+--   suc (l2 + (r2 + suc (l1 + r1))) :~: suc ((l1 + r1) + suc (l2 + r2))
 --
 -- Again we use cong to deal with the outer calls to suc and
 -- substitute a = l2, b = r2 and c = l1 + r1. This leaves us with a
 -- proof of lemma A:
 --
---   a + (b + suc c) ≡ c + suc (a + b)
+--   a + (b + suc c) :~: c + suc (a + b)
 --
 -- From associativity we know that:
 --
---   a + (b + suc c) ≡ (a + b) + suc c
+--   a + (b + suc c) :~: (a + b) + suc c
 --
 -- If we prove lemma B:
 --
@@ -247,20 +258,20 @@ proof1 l1 r1 l2 r2 = cong SSucc (plusAssoc l1 r1 (SSucc (l2 %:+ r2)))
 -- we can combine it using transitivity to get the final proof. We can
 -- rewrite lemma B as:
 --
---    n + suc m ≡ m + suc n
+--    n + suc m :~: m + suc n
 --
 -- where n = a + b and m = c. From symmetry of +suc we have:
 ---
---   n + (suc m) ≡ suc (n + m)
+--   n + (suc m) :~: suc (n + m)
 --
 -- Using transitivity we combine it with congruence on commutativity
 -- of addition to prove:
 --
---   suc (n + m) ≡ suc (m + n)
+--   suc (n + m) :~: suc (m + n)
 --
 -- Again, using transitivity we combine it with +suc:
 --
---   suc (m + n) ≡ m + suc n
+--   suc (m + n) :~: m + suc n
 --
 -- Which proves lemma B and therefore the whole proof is complete.
 --
@@ -290,7 +301,7 @@ proof2 l1 r1 l2 r2 = cong SSucc (lemmaA l2 r2 (l1 %:+ r1))
 -- step. Inlining lemmas A and B into proof-2 gives:
 --
 --   proof-2i : (l1 r1 l2 r2 : Nat) → suc (l2 + (r2  + suc (l1 + r1)))
---                                  ≡ suc ((l1 + r1) + suc (l2 + r2))
+--                                  :~: suc ((l1 + r1) + suc (l2 + r2))
 --   proof-2i l1 r1 l2 r2 =
 --     cong suc (trans (+assoc l2 r2 (suc (l1 + r1)))
 --              (trans (sym (+suc (l2 + r2) (l1 + r1)))
@@ -300,34 +311,34 @@ proof2 l1 r1 l2 r2 = cong SSucc (lemmaA l2 r2 (l1 %:+ r1))
 -- We see a lot of properties combined using transitivity. In general,
 -- if we have to prove:
 --
---   a ≡ e
+--   a :~: e
 --
 -- and we can prove:
 --
---   a ≡ b, b ≡ c, c ≡ d, d ≡ e
+--   a :~: b, b :~: c, c :~: d, d :~: e
 --
 -- then we can combine these proofs using transitivity:
 --
---   trans (a ≡ b) (trans (b ≡ c) (trans (c ≡ d) (d ≡ e)))
+--   trans (a :~: b) (trans (b :~: c) (trans (c :~: d) (d :~: e)))
 --
 -- While simple to use, combining proofs with transitivity can be not
 -- so obvious at first. Let's rewrite the proof we have conducted
 -- using following notation:
 --
---  a ≡[ proof 1 ]
---  b ≡[ proof 2 ]
---  c ≡[ proof 3 ]
---  d ≡[ proof 4 ]
+--  a :~:[ proof 1 ]
+--  b :~:[ proof 2 ]
+--  c :~:[ proof 3 ]
+--  d :~:[ proof 4 ]
 --  e ∎
 --
--- Where proof 1 proves a ≡ b, proof 2 proves b ≡ c and so on. In our
+-- Where proof 1 proves a :~: b, proof 2 proves b :~: c and so on. In our
 -- particular case this will be:
 --
---  suc  (l2 + (r2 + suc (l1 + r1))) ≡[ cong suc ]
--- [suc]  l2 + (r2 + suc (l1 + r1))  ≡[+assoc l2 r2 (suc (l1 + r1))]
--- [suc] (l2 + r2) + suc (l1 + r1)   ≡[ sym (+suc (l2 + r2) (l1 + r1))]
--- [suc] suc ((l2 + r2) + (l1 + r1)) ≡[ cong suc (+comm (l2 + r2) (l1 + r1)) ]
--- [suc] suc ((l1 + r1) + (l2 + r2)) ≡[+suc (l1 + r1) (l2 + r2) ]
+--  suc  (l2 + (r2 + suc (l1 + r1))) :~:[ cong suc ]
+-- [suc]  l2 + (r2 + suc (l1 + r1))  :~:[+assoc l2 r2 (suc (l1 + r1))]
+-- [suc] (l2 + r2) + suc (l1 + r1)   :~:[ sym (+suc (l2 + r2) (l1 + r1))]
+-- [suc] suc ((l2 + r2) + (l1 + r1)) :~:[ cong suc (+comm (l2 + r2) (l1 + r1)) ]
+-- [suc] suc ((l1 + r1) + (l2 + r2)) :~:[+suc (l1 + r1) (l2 + r2) ]
 -- [suc] (l1 + r1) + suc (l2 + r2) ∎
 --
 -- We use [suc] to denote that everything happens under a call to suc

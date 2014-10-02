@@ -1,8 +1,8 @@
 ----------------------------------------------------------------------
--- Copyright: 2013, Jan Stolarek, Lodz University of Technology     --
+-- Copyright: 2014, Jan Stolarek, Politechnika Łódzka     --
 --                                                                  --
 -- License: See LICENSE file in root of the repo                    --
--- Repo address: https://github.com/jstolarek/dep-typed-wbl-heaps   --
+-- Repo address: https://github.com/jstolarek/dep-typed-wbl-heaps-hs   --
 --                                                                  --
 -- Weight biased leftist heap that proves to maintain priority      --
 -- invariant and uses a single-pass merging algorithm.              --
@@ -16,7 +16,7 @@
 {-# LANGUAGE TypeOperators       #-}
 module SinglePassMerge.PriorityProof where
 
-import Data.Singletons
+
 
 import Basics
 

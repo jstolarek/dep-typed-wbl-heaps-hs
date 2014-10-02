@@ -1,5 +1,5 @@
 ------------------------------------------------------------------------
--- Copyright: 2014, Jan Stolarek, Lodz University of Technology       --
+-- Copyright: 2014, Jan Stolarek, Politechnika Łódzka       --
 --                                                                    --
 -- License: See LICENSE file in root of the repo                      --
 -- Repo address: https://github.com/jstolarek/dep-typed-wbl-heaps-hs  --
@@ -17,7 +17,7 @@
 {-# LANGUAGE TypeOperators       #-}
 module TwoPassMerge.PriorityProof where
 
-import Data.Singletons
+
 
 import Basics
 import qualified Basics.Nat as Nat ((>=))
@@ -190,10 +190,10 @@ insert0 p h = merge (singleton p) (toZero h)
 -- by its index? To achieve that we need a new singleton function that
 -- constructs a singleton Heap with a bound equal to priority of a
 -- single element stored by the heap. To construct a proof required by
--- node we use ≥sym, which proves that if p ≡ p then p ≥ p.
+-- node we use ≥sym, which proves that if p :~: p then p ≥ p.
 singletonB :: forall (p :: Nat).
               Sing p -> Heap p
-singletonB p = Node p one (geSym p p Refl) Empty Empty
+singletonB p = Node p one (geqSym p p Refl) Empty Empty
 
 -- We can now write new insert function that uses singletonB function:
 insertB :: forall (p :: Nat).
@@ -233,10 +233,10 @@ singletonB' p pgeb = Node p one pgeb Empty Empty
 -- zero, then b is also not zero (by definitions of data constructors
 -- of ≥) and hence a is also not zero. This gives us second equation
 -- that is a recursive proof on ≥trans.
-geTrans :: forall a b c. GEq a b -> GEq b c -> GEq a c
-geTrans _          GeZ        = GeZ
-geTrans (GeS ageb) (GeS bgec) = GeS (geTrans ageb bgec)
-geTrans _          _          = unreachable
+geqTrans :: forall a b c. GEq a b -> GEq b c -> GEq a c
+geqTrans _          GeZ        = GeZ
+geqTrans (GeS ageb) (GeS bgec) = GeS (geqTrans ageb bgec)
+geqTrans _          _          = unreachable
 
 -- Having proved the transitivity of ≥ we can construct a function
 -- that loosens the bound we put on a heap. If we have a heap with a
@@ -254,7 +254,7 @@ geTrans _          _          = unreachable
 -- evidence that 3 ≥ 5 because we cannot construct value of that type.
 liftBound :: forall p b. GEq b p -> Heap b -> Heap p
 liftBound _     Empty                = Empty
-liftBound bgen (Node p rnk pgeb l r) = Node p rnk (geTrans pgeb bgen) l r
+liftBound bgen (Node p rnk pgeb l r) = Node p rnk (geqTrans pgeb bgen) l r
 
 -- With singletonB and liftBound we can construct insert function that
 -- allows to insert element with priority p into a Heap bound by b,

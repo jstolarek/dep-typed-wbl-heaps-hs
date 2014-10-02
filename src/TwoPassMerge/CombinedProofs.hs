@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------
--- Copyright: 2014, Jan Stolarek, Lodz University of Technology     --
+-- Copyright: 2014, Jan Stolarek, Politechnika Łódzka     --
 --                                                                  --
 -- License: See LICENSE file in root of the repo                    --
 -- Repo address: https://github.com/jstolarek/dep-typed-wbl-heaps-hs   --
@@ -16,7 +16,7 @@
 {-# LANGUAGE TypeOperators       #-}
 module TwoPassMerge.CombinedProofs where
 
-import Data.Singletons
+
 
 import Basics
 import TwoPassMerge.RankProof ( makeTlemma, proof1, proof2 )

@@ -2,8 +2,18 @@ write readme
 add comment headers everywhere:: update year, university name and link to repo
 strip dependencies to singletons
 remove references to my paper
-geTrans -> geqTrans
-geSym -> geqSym
+
+convention: whenevr I write #9632 I mean a GHC bug report number
+I'm using GADT syntax everywhere, even if a type is not a gadt
+I'm not using prelude
+
+no dependencies on any libraries
+
+everything is exposed, this package is not intended to do anything useful
+
+assuming you know singletons
+
+focus on the proofs, not on encodings (like singletons)
 
 agda diferences:
 awkward names because there is no unicdoe, agda's syntax is more flexible

@@ -1,8 +1,8 @@
 ----------------------------------------------------------------------
--- Copyright: 2013, Jan Stolarek, Lodz University of Technology     --
+-- Copyright: 2014, Jan Stolarek, Politechnika Łódzka     --
 --                                                                  --
 -- License: See LICENSE file in root of the repo                    --
--- Repo address: https://github.com/jstolarek/dep-typed-wbl-heaps   --
+-- Repo address: https://github.com/jstolarek/dep-typed-wbl-heaps-hs   --
 --                                                                  --
 -- Basic implementation of weight-biased leftist heap. No proofs    --
 -- and no dependent types. Uses a single-pass merging algorithm.    --
