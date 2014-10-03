@@ -1,13 +1,13 @@
-----------------------------------------------------------------------
--- Copyright: 2014, Jan Stolarek, Politechnika Łódzka     --
---                                                                  --
--- License: See LICENSE file in root of the repo                    --
--- Repo address: https://github.com/jstolarek/dep-typed-wbl-heaps-hs   --
---                                                                  --
--- Weight biased leftist heap that proves rank invariant: size of   --
--- left subtree of a node is not smaller than size of right         --
--- subtree. Uses a two-pass merging algorithm.                      --
-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+-- Copyright: 2014, Jan Stolarek, Politechnika Łódzka                --
+--                                                                   --
+-- License: See LICENSE file in root of the repo                     --
+-- Repo address: https://github.com/jstolarek/dep-typed-wbl-heaps-hs --
+--                                                                   --
+-- Weight biased leftist heap that proves rank invariant: size of    --
+-- left subtree of a node is not smaller than size of right          --
+-- subtree. Uses a two-pass merging algorithm.                       --
+-----------------------------------------------------------------------
 
 {-# LANGUAGE DataKinds           #-}
 {-# LANGUAGE GADTs               #-}
@@ -17,40 +17,43 @@
 {-# LANGUAGE TypeOperators       #-}
 module TwoPassMerge.RankProof where
 
-
-
 import Basics
 
 -- To prove the rank invariant we will index each Heap by its size,
--- (remember that size of a heap is its rank). Therefore index of
--- value n says that a Heap stores n elements. When merging two heaps
--- we will use the index to ensure that rank invariant is maintained.
+-- (remember that size and rank of a heap are the same). Therefore
+-- index of value n says that a Heap stores n elements. When merging
+-- two heaps we will use the index to ensure that rank invariant is
+-- maintained.
 --
 -- Again, Heap has two constructor:
 --
---  1) empty constructs a heap containing no elements. Therefore the
+--  1) Empty constructs a Heap containing no elements. Therefore the
 --     index is 0.
 --
---  2) node takes two subtrees: one containing l elements, the other
+--  2) Node takes two subtrees: one containing l elements, the other
 --     containing r elements. The size of resulting heap is the sum of
 --     l and r plus one for the element stored by the node itself. To
 --     enforce the rank invariant node constructor expects a proof
---     that invariant holds: a value of type l ≥ r. If we can
+--     that invariant holds: a value of type GEq l r. If we can
 --     construct value of this type then it proves the invariant.
 data Heap :: Nat -> * where
   Empty :: Heap Zero
   Node  :: Priority -> GEq l r -> Heap l -> Heap r -> Heap (Succ (l :+ r))
 
--- Since rank is now an index we no longer need rank function to
--- extract Rank from a node. We can pattern match on the index
--- instead.
-rank :: Heap l -> Sing l
+-- Returns rank of node. Here we have a significant difference between
+-- Haskell and a fully-fledged dependently-typed languages. Heap is
+-- indexed by a rank, which means that in a dependenty typed language
+-- we could simply pattern-match on the index. In Haskell we need to
+-- explicitly calculate the rank. Since the result is a singleton we
+-- at least get the guarantee that the computed size is correct (note
+-- how Heap and resulting SNat have the same type variable).
+rank :: Heap l -> SNat l
 rank Empty          = SZero
 rank (Node _ _ l r) = SSucc (rank l %:+ rank r)
 
 -- Singleton heap stores only one element. Therefore it has size of
--- one. To prove the rank invariant we must show that 0 ≥ 0. We
--- construct a value of this type using ge0 constructor.
+-- one. To prove the rank invariant we must show that 0 >= 0. We
+-- construct a value of this type using GeZ constructor.
 singleton :: Priority -> Heap One
 singleton p = Node p GeZ Empty Empty
 
@@ -58,11 +61,11 @@ singleton p = Node p GeZ Empty Empty
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 --
 -- Proving the rank invariant itself is surprisingly simple. We just
--- need to supply a proof that rank of left subtree is not smaller
--- than rank of right subtree. We can easily obtain evidence that it
--- is so by using order function which return result of comparing two
--- natural numbers (which will be tree ranks in this case) together
--- with a proof of the result.
+-- need to supply evidence that rank of left subtree is not smaller
+-- than rank of right subtree. We can easily obtain that evidence by
+-- using order function which returns result of comparing two natural
+-- numbers (which will be tree ranks in this case) together with a
+-- proof of the result.
 --
 -- But there is a different difficulty here. Since we index heaps by
 -- their size we now require that makeT and merge construct trees of
@@ -88,24 +91,22 @@ singleton p = Node p GeZ Empty Empty
 -- size 1 + l + r. We must prove that each of two cases of makeT
 -- returns tree of correct size:
 --
---  1) size of l is ≥ than size of r: no extra proof is necessary as
+--  1) size of l is >= than size of r: no extra proof is necessary as
 --     everything follows from the definition of +.
 --
---  2) size of r is ≥ than size of l: in this case we swap left and
+--  2) size of r is >= than size of l: in this case we swap left and
 --     right subtrees. This requires us to prove that:
 --
---       suc (r + l) :~: suc (l + r)
+--       Succ (r + l) :~: Succ (l + r)
 --
---     That proof is done using congruence on suc function and
+--     That proof is done using congruence on SSucc function and
 --     commutativity of addition. We will define that proof as
---     makeT-lemma as we will be using in subsequent proofs.
+--     makeTlemma as we will be using in subsequent proofs.
 
-makeTlemma :: forall (a :: Nat) (b :: Nat).
-              Sing a -> Sing b -> (Succ (a :+ b)) :~: (Succ (b :+ a))
+makeTlemma :: SNat a -> SNat b -> (Succ (a :+ b)) :~: (Succ (b :+ a))
 makeTlemma a b = cong SSucc (plusComm a b)
 
-makeT :: forall (l :: Nat) (r :: Nat).
-         Sing l -> Sing r -> Priority -> Heap l -> Heap r -> Heap (Succ (l :+ r))
+makeT :: SNat l -> SNat r -> Priority -> Heap l -> Heap r -> Heap (Succ (l :+ r))
 makeT lRank rRank p l r = case order lRank rRank of
   Ge lger -> Node p lger l r
   Le rgel -> gcastWith (makeTlemma rRank lRank) (Node p rgel r l)
@@ -125,8 +126,8 @@ makeT lRank rRank p l r = case order lRank rRank of
 --
 -- Note that:
 --
---    h1 = suc (l1 + r1)
---    h2 = suc (l2 + r2)
+--    h1 = Succ (l1 + r1)
+--    h2 = Succ (l2 + r2)
 --
 --     h1         h2
 --
@@ -141,14 +142,14 @@ makeT lRank rRank p l r = case order lRank rRank of
 --
 -- We need to prove that all four cases of merge (see [Two-pass merging
 -- algorithm]) produce heap of required size, which is h1 + h2. Since
--- in the proofs we will always operate on l1, r1, l2 and r2 we have:
+-- in the proofs we will mostly operate on l1, r1, l2 and r2 we have:
 --
---   h1 + h2 ̄:~: suc (l1 + r1) + suc (l2 + r2)
---           :~: suc ((l1 + r1) + suc (l2 + r2))
+--   h1 + h2 ̄:~: Succ (l1 + r1) + Succ (l2 + r2)
+--           :~: Succ ((l1 + r1) + Succ (l2 + r2))
 --
 -- (Second transformation comes from definition of +). This is the
--- expected size and therefore the final result we must prove in every
--- case that we analyze.
+-- size expected by the typechecker and therefore the final result we
+-- must prove in every case that we analyze.
 
 -- It is best to study the implementation of merge now and then read
 -- the explanation of proofs.
@@ -156,11 +157,11 @@ makeT lRank rRank p l r = case order lRank rRank of
 -- Note [merge, proof 0a]
 -- ~~~~~~~~~~~~~~~~~~~~~~
 --
--- h1 :~: 0, therefore: h1 + h2 :~: 0 + h2 :~: h2 ∎
+-- h1 :~: 0, therefore: h1 + h2 :~: 0 + h2 :~: h2
 --
--- This is definitional equality based on _+_
+-- This is definitional equality based on +
 --
--- ∎
+-- QED
 
 -- Note [merge, proof 0b]
 -- ~~~~~~~~~~~~~~~~~~~~~~
@@ -172,43 +173,42 @@ makeT lRank rRank p l r = case order lRank rRank of
 --
 -- This is a simple statement that 0 is right identity of addition. We
 -- proved that as one of basic properties of addition in
--- Basics.Reasoning module, except our proof had the sides of equality
--- reversed, ie. we proved a + 0 :~: a, not a :~: a + 0). We use symmetry
--- to construct a proof of latter from the former.
+-- Basics.Reasoning module, except that our proof had the sides of
+-- equality reversed, ie. we proved a + 0 :~: a, not a :~: a + 0. We
+-- use symmetry to construct a proof of latter from the former.
 --
--- ∎
+-- QED
 
 -- Note [merge, proof 1]
 -- ~~~~~~~~~~~~~~~~~~~~~
 --
 -- We have p1 < p2. We keep p1 as the root and need to prove that
 -- merging r1 with h2 gives correct size.  Here's how the term that
--- performs the merge corresponds to its type (for the sake of
--- readability I elided implict parameters):
+-- performs the merge corresponds to its type:
 --
---   makeT p1 x1 l1 (merge r1 (node p2 l2≥r2 l2 r2))
---    |          |         |   \__________________/
+--   makeT l1Rank (r1Rank %:+ h2Rank) p1 l1 (merge r1 h2)
+--    |          |         |   
 --    |   +------+         |            |
 --    |   |     +----------+            |
---    |   |     |             +---------+
+--    |   |     |             +---------------------+
 --    |   |     |     ________|__
 --    |   |     |    /           \
---   suc (l1 + (r1 + suc (l2 + r2)))
+--   Succ (l1 + (r1 + Succ (l2 + r2)))
 --
 -- Formally:
 --
---   suc (l1 + (r1 + suc (l2 + r2))) :~: suc ((l1 + r1) + suc (l2 + r2))
+--   Succ (l1 + (r1 + Succ (l2 + r2))) :~: Succ ((l1 + r1) + Succ (l2 + r2))
 --
 -- Recall that RHS of this equality comes from [Proving merge]. We
 -- begin proof with congruence on suc:
 --
---   cong suc X
+--   cong Succ X
 --
 -- where X proves
 --
---   l1 + (r1 + suc (l2 + r2)) :~: (l1 + r1) + suc (l2 + r2)
+--   l1 + (r1 + Succ (l2 + r2)) :~: (l1 + r1) + Succ (l2 + r2)
 --
--- Substituting a = l1, b = r1 and c = suc (l2 + r2) we have
+-- Substituting a = l1, b = r1 and c = Succ (l2 + r2) we have
 --
 --   a + (b + c) :~: (a + b) + c
 --
@@ -235,43 +235,43 @@ proof1 l1 r1 l2 r2 = cong SSucc (plusAssoc l1 r1 (SSucc (l2 %:+ r2)))
 --    |   |     +----------+  +---------+
 --    |   |     |     ________|__
 --    |   |     |    /           \
---   suc (l2 + (r2 + suc (l1 + r1)))
+--   Succ (l2 + (r2 + Succ (l1 + r1)))
 --
 -- Formally:
 --
---   suc (l2 + (r2 + suc (l1 + r1))) :~: suc ((l1 + r1) + suc (l2 + r2))
+--   Succ (l2 + (r2 + Succ (l1 + r1))) :~: Succ ((l1 + r1) + Succ (l2 + r2))
 --
--- Again we use cong to deal with the outer calls to suc and
+-- Again we use cong to deal with the outer calls to Succ and
 -- substitute a = l2, b = r2 and c = l1 + r1. This leaves us with a
 -- proof of lemma A:
 --
---   a + (b + suc c) :~: c + suc (a + b)
+--   a + (b + Succ c) :~: c + Succ (a + b)
 --
 -- From associativity we know that:
 --
---   a + (b + suc c) :~: (a + b) + suc c
+--   a + (b + Succ c) :~: (a + b) + Succ c
 --
 -- If we prove lemma B:
 --
---  (a + b) + suc c = c + suc (a + b)
+--  (a + b) + Succ c = c + Succ (a + b)
 --
 -- we can combine it using transitivity to get the final proof. We can
 -- rewrite lemma B as:
 --
---    n + suc m :~: m + suc n
+--    n + Succ m :~: m + Succ n
 --
--- where n = a + b and m = c. From symmetry of +suc we have:
+-- where n = a + b and m = c. From symmetry of +Succ we have:
 ---
---   n + (suc m) :~: suc (n + m)
+--   n + (Succ m) :~: Succ (n + m)
 --
 -- Using transitivity we combine it with congruence on commutativity
 -- of addition to prove:
 --
---   suc (n + m) :~: suc (m + n)
+--   Succ (n + m) :~: Succ (m + n)
 --
 -- Again, using transitivity we combine it with +suc:
 --
---   suc (m + n) :~: m + suc n
+--   Succ (m + n) :~: m + Succ n
 --
 -- Which proves lemma B and therefore the whole proof is complete.
 --
@@ -300,13 +300,13 @@ proof2 l1 r1 l2 r2 = cong SSucc (lemmaA l2 r2 (l1 %:+ r1))
 -- different fassion to see closely what is happening at each
 -- step. Inlining lemmas A and B into proof-2 gives:
 --
---   proof-2i : (l1 r1 l2 r2 : Nat) → suc (l2 + (r2  + suc (l1 + r1)))
---                                  :~: suc ((l1 + r1) + suc (l2 + r2))
+--   proof-2i : (l1 r1 l2 r2 : Nat) → Succ (l2 + (r2  + Succ (l1 + r1)))
+--                                  :~: Succ ((l1 + r1) + Succ (l2 + r2))
 --   proof-2i l1 r1 l2 r2 =
---     cong suc (trans (+assoc l2 r2 (suc (l1 + r1)))
---              (trans (sym (+suc (l2 + r2) (l1 + r1)))
---              (trans (cong suc (+comm (l2 + r2) (l1 + r1)))
---                     (+suc (l1 + r1) (l2 + r2))))
+--     cong Succ (trans (+assoc l2 r2 (Succ (l1 + r1)))
+--              (trans (sym (+Succ (l2 + r2) (l1 + r1)))
+--              (trans (cong Succ (+comm (l2 + r2) (l1 + r1)))
+--                     (+Succ (l1 + r1) (l2 + r2))))
 --
 -- We see a lot of properties combined using transitivity. In general,
 -- if we have to prove:
@@ -334,12 +334,12 @@ proof2 l1 r1 l2 r2 = cong SSucc (lemmaA l2 r2 (l1 %:+ r1))
 -- Where proof 1 proves a :~: b, proof 2 proves b :~: c and so on. In our
 -- particular case this will be:
 --
---  suc  (l2 + (r2 + suc (l1 + r1))) :~:[ cong suc ]
--- [suc]  l2 + (r2 + suc (l1 + r1))  :~:[+assoc l2 r2 (suc (l1 + r1))]
--- [suc] (l2 + r2) + suc (l1 + r1)   :~:[ sym (+suc (l2 + r2) (l1 + r1))]
--- [suc] suc ((l2 + r2) + (l1 + r1)) :~:[ cong suc (+comm (l2 + r2) (l1 + r1)) ]
--- [suc] suc ((l1 + r1) + (l2 + r2)) :~:[+suc (l1 + r1) (l2 + r2) ]
--- [suc] (l1 + r1) + suc (l2 + r2) ∎
+--  Succ  (l2 + (r2 + Succ (l1 + r1))) :~:[ cong Succ ]
+-- [suc]  l2 + (r2 + Succ (l1 + r1))  :~:[+assoc l2 r2 (Succ (l1 + r1))]
+-- [suc] (l2 + r2) + Succ (l1 + r1)   :~:[ sym (+Succ (l2 + r2) (l1 + r1))]
+-- [suc] Succ ((l2 + r2) + (l1 + r1)) :~:[ cong Succ (+comm (l2 + r2) (l1 + r1)) ]
+-- [suc] Succ ((l1 + r1) + (l2 + r2)) :~:[+Succ (l1 + r1) (l2 + r2) ]
+-- [suc] (l1 + r1) + Succ (l2 + r2) ∎
 --
 -- We use [suc] to denote that everything happens under a call to suc
 -- (thanks to using congruence). Compare this notation with code of
@@ -375,19 +375,19 @@ merge h1@(Node p1 _ l1 r1)
 
 -- We require that inserting an element into the heap increases its
 -- size by one. As previously we define insert as merge and a
--- singleton heap. Size of singleton heap is (suc zero), while already
+-- singleton heap. Size of singleton heap is (Succ zero), while already
 -- existing heap has size n. According to definition of merge the
 -- resulting heap will therefore have size:
 --
---   (suc zero) + n
+--   (Succ zero) + n
 --
 -- By definition of + this can be normalized to:
 --
---   suc (zero + n)
+--   Succ (zero + n)
 --
 -- and finally to
 --
---   suc n
+--   Succ n
 --
 -- Which is size we require in the type signature. This means we don't
 -- need any additional proof because expected result follows from

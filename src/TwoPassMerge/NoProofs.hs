@@ -1,12 +1,12 @@
-----------------------------------------------------------------------
--- Copyright: 2014, Jan Stolarek, Politechnika Łódzka     --
---                                                                  --
--- License: See LICENSE file in root of the repo                    --
--- Repo address: https://github.com/jstolarek/dep-typed-wbl-heaps-hs   --
---                                                                  --
--- Basic implementation of weight-biased leftist heap. No proofs    --
--- and no dependent types. Uses a two-pass merging algorithm.       --
-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+-- Copyright: 2014, Jan Stolarek, Politechnika Łódzka                --
+--                                                                   --
+-- License: See LICENSE file in root of the repo                     --
+-- Repo address: https://github.com/jstolarek/dep-typed-wbl-heaps-hs --
+--                                                                   --
+-- Basic implementation of weight-biased leftist heap. No proofs     --
+-- and no dependent types. Uses a two-pass merging algorithm.        --
+-----------------------------------------------------------------------
 
 {-# LANGUAGE GADTs                #-}
 {-# LANGUAGE KindSignatures       #-}
@@ -52,7 +52,7 @@ singleton p = Node p one Empty Empty
 --
 --    b) h2 is empty - return h1
 --
--- The other two form the inductive definition of merge:
+-- The other two cases form the inductive definition of merge:
 --
 --    c) priority p1 is higher than p2 - p1 becomes new root, l1
 --       becomes its one child and result of merging r1 with h2
@@ -78,11 +78,12 @@ singleton p = Node p one Empty Empty
 -- and r1+h2 or l2 and r2+h1 - to makeT, which creates a new node by
 -- inspecting sizes of children and swapping them if necessary.
 
--- makeT takes an element (priority) and two heaps (trees). It
+-- makeT takes an element (Priority) and two heaps (trees). It
 -- constructs a new heap with element at the root and two heaps as
 -- children. makeT ensures that WBL heap rank invariant is maintained
 -- in the newly created tree by reversing left and right subtrees when
--- necessary (note the inversed r and l in the last case of makeT).
+-- necessary (note the inversed r and l in the False alternative of
+-- case expression).
 makeT :: Priority -> Heap -> Heap -> Heap
 makeT p l r = case rank l >= rank r of
                 True  -> Node p (Succ (rank l + rank r)) l r
@@ -106,30 +107,26 @@ insert p h = merge (singleton p) h
 
 -- findMin returns element with highest priority, ie. root
 -- element. Here we encounter first serious problem: we can't return
--- anything for empty node. If this was Haskell we could throw an
--- error, but Agda is a total language. This means that every program
--- written in Agda eventually terminates and produces a
--- result. Throwing errors is not allowed.
+-- anything sensible for empty node.
 findMin :: Heap -> Priority
-findMin Empty          = undefined -- does it make sense to assume default
-                                   -- priority for empty heap?
+findMin Empty          = undefined
 findMin (Node p _ _ _) = p
 
-
+-- alternatively, we can invent Maybe
 data Maybe (a :: *) :: * where
   Nothing :: Maybe a
   Just    :: a -> Maybe a
 
+-- and write a safer version of findMinM
 findMinM :: Heap -> Maybe Priority
 findMinM Empty          = Nothing
 findMinM (Node p _ _ _) = Just p
 
-
 -- deleteMin removes the element with the highest priority by merging
 -- subtrees of a root element. Again the case of empty heap is
--- problematic. We could give it semantics by returning empty, but
+-- problematic. We could give it semantics by returning Empty, but
 -- this just doesn't feel right. Why should we be able to remove
--- elements from the empty heap?
+-- elements from an empty heap?
 deleteMin :: Heap -> Heap
 deleteMin Empty          = undefined -- should we insert empty?
 deleteMin (Node _ _ l r) = merge l r

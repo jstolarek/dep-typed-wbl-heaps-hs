@@ -47,10 +47,11 @@ trans Refl Refl = Refl
 cong :: (Sing a -> Sing b) -> (a :~: c) -> (f a :~: f c)
 cong _ Refl = Refl
 
--- Agda's equivalent of gcastWith is subst. gcast with is more
--- convenient to use because it doesn't require the type constructor
--- to be passed in. (See my Agda implementation if this doesn't make
--- sense).
+-- Agda's equivalent of gcastWith is subst, used for type-safe casts
+-- when we have a proof of equality of two types. gcast with is more
+-- convenient to use than Agda's subst because it doesn't require the
+-- type constructor to be passed in. (See my Agda implementation if
+-- this doesn't make sense).
 gcastWith :: (a :~: b) -> ((a ~ b) => r) -> r
 gcastWith Refl x = x
 
@@ -265,11 +266,11 @@ plusAssoc (SSucc a) b c = cong SSucc (plusAssoc a b c)
 --     Haskell, so they are explicit. This is only slightly
 --     inconvenient. What is more inconvenient is that Haskell can't
 --     recognize that only two of four equations are actually
---     accessible. We still need to write them down or GHC will
---     complain about non-exhaustive pattern matching. See
+--     accessible. We need to write the inaccessible equation or GHC
+--     will complain about non-exhaustive pattern matching. See
 --     documentation of Basics.Unreachable for more details. The
---     requirement that the two SNats are equal comes from the (a :~:
---     b) type which says that a and b are equal.
+--     requirement that the two SNat parameters are equal comes from
+--     the (a :~: b) type which says that a and b are equal.
 --
 -- In the base case we need to construct a proof that 0 >= 0, which we
 -- do by using GeZ. Inductive case simply applies GeZ to result of
