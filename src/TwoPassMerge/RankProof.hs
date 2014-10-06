@@ -187,22 +187,22 @@ makeT lRank rRank p l r = case order lRank rRank of
 -- performs the merge corresponds to its type:
 --
 --   makeT l1Rank (r1Rank %:+ h2Rank) p1 l1 (merge r1 h2)
---    |          |         |   
---    |   +------+         |            |
---    |   |     +----------+            |
---    |   |     |             +---------------------+
+--    |                                   |         |  |
+--    |   +-------------------------------+         |  |
+--    |   |     +-----------------------------------+  |
+--    |   |     |             +------------------------+
 --    |   |     |     ________|__
 --    |   |     |    /           \
---   Succ (l1 + (r1 + Succ (l2 + r2)))
+--  Succ (l1 + (r1 + Succ (l2 + r2)))
 --
 -- Formally:
 --
 --   Succ (l1 + (r1 + Succ (l2 + r2))) :~: Succ ((l1 + r1) + Succ (l2 + r2))
 --
 -- Recall that RHS of this equality comes from [Proving merge]. We
--- begin proof with congruence on suc:
+-- begin proof with congruence on Succ:
 --
---   cong Succ X
+--   cong SSucc X
 --
 -- where X proves
 --
@@ -213,13 +213,13 @@ makeT lRank rRank p l r = case order lRank rRank of
 --   a + (b + c) :~: (a + b) + c
 --
 -- Which is associativity of addition that we have already proved in
--- Basics.Reasoning.
+-- Basics.Reasoning. We thus refer to plusAssoc to finish our proof.
 --
--- ∎
+-- QED
 
-proof1 :: forall (l1 :: Nat) (r1 :: Nat) (l2 :: Nat) (r2 :: Nat).
-       Sing l1 -> Sing r1 -> Sing l2 -> Sing r2 ->
-       (Succ ( l1 :+ (r1 :+ Succ (l2 :+ r2))) :~: Succ ((l1 :+ r1) :+ Succ (l2 :+ r2)))
+proof1 :: SNat l1 -> SNat r1 -> SNat l2 -> SNat r2 ->
+          (Succ ( l1 :+ (r1 :+ Succ (l2 :+ r2)))
+                    :~: Succ ((l1 :+ r1) :+ Succ (l2 :+ r2)))
 proof1 l1 r1 l2 r2 = cong SSucc (plusAssoc l1 r1 (SSucc (l2 %:+ r2)))
 
 -- Note [merge, proof 2]
@@ -229,13 +229,14 @@ proof1 l1 r1 l2 r2 = cong SSucc (plusAssoc l1 r1 (SSucc (l2 %:+ r2)))
 -- merging r2 with h1 gives correct size. Again, here's the
 -- corespondence between the term and its type:
 --
---   makeT p2 x2 l2 (merge r2 (node p1 l1≥r1 l1 r1))
---    |          |         |   \_________________/
---    |   +------+         |            |
---    |   |     +----------+  +---------+
+--   makeT l2Rank (r2Rank %:+ h1Rank) p2 l2 (merge r2 h1)
+--    |                                   |         |  |
+--    |   +-------------------------------+         |  |
+--    |   |     +-----------------------------------+  |
+--    |   |     |             +------------------------+
 --    |   |     |     ________|__
 --    |   |     |    /           \
---   Succ (l2 + (r2 + Succ (l1 + r1)))
+--  Succ (l2 + (r2 + Succ (l1 + r1)))
 --
 -- Formally:
 --
@@ -255,13 +256,13 @@ proof1 l1 r1 l2 r2 = cong SSucc (plusAssoc l1 r1 (SSucc (l2 %:+ r2)))
 --
 --  (a + b) + Succ c = c + Succ (a + b)
 --
--- we can combine it using transitivity to get the final proof. We can
--- rewrite lemma B as:
+-- we can combine it with lemma A using transitivity to get the final
+-- proof. We can rewrite lemma B as:
 --
---    n + Succ m :~: m + Succ n
+--   n + Succ m :~: m + Succ n
 --
--- where n = a + b and m = c. From symmetry of +Succ we have:
----
+-- where n = a + b and m = c. From symmetry of plusSucc we have:
+--
 --   n + (Succ m) :~: Succ (n + m)
 --
 -- Using transitivity we combine it with congruence on commutativity
@@ -269,44 +270,43 @@ proof1 l1 r1 l2 r2 = cong SSucc (plusAssoc l1 r1 (SSucc (l2 %:+ r2)))
 --
 --   Succ (n + m) :~: Succ (m + n)
 --
--- Again, using transitivity we combine it with +suc:
+-- Again, using transitivity we combine it with plusSucc:
 --
 --   Succ (m + n) :~: m + Succ n
 --
 -- Which proves lemma B and therefore the whole proof is complete.
 --
--- ∎
+-- QED
 
-lemmaB :: forall (n :: Nat) (m :: Nat).
-          Sing n -> Sing m -> ((n :+ Succ m) :~: (m :+ Succ n))
-lemmaB n m = trans (sym (plusSucc n m)) (trans (cong SSucc (plusComm n m)) (plusSucc m n))
+lemmaB :: SNat n -> SNat m -> ((n :+ Succ m) :~: (m :+ Succ n))
+lemmaB n m = trans (sym (plusSucc n m)) (trans (cong SSucc (plusComm n m))
+                                               (plusSucc m n))
 
-lemmaA :: forall (a :: Nat) (b :: Nat) (c :: Nat).
-          Sing a -> Sing b -> Sing c ->
+lemmaA :: SNat a -> SNat b -> SNat c ->
           ((a :+ (b :+ Succ c)) :~: (c :+ Succ (a :+ b)))
 lemmaA a b c = trans (plusAssoc a b (SSucc c)) (lemmaB (a %:+ b) c)
 
-proof2 :: forall (l1 :: Nat) (r1 :: Nat) (l2 :: Nat) (r2 :: Nat).
-       Sing l1 -> Sing r1 -> Sing l2 -> Sing r2 ->
-       (Succ (l2 :+ (r2  :+ Succ (l1 :+ r1))))
-       :~: (Succ ((l1 :+ r1) :+ Succ (l2 :+ r2)))
+proof2 :: SNat l1 -> SNat r1 -> SNat l2 -> SNat r2 ->
+          Succ (l2 :+ (r2  :+ Succ (l1 :+ r1)))
+                :~: Succ ((l1 :+ r1) :+ Succ (l2 :+ r2))
 proof2 l1 r1 l2 r2 = cong SSucc (lemmaA l2 r2 (l1 %:+ r1))
 
 -- Note [Constructing equality proofs using transitivity]
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 --
 -- Now that constructed two specific proofs we can focus on a more
--- general technique used in both cases. Let's rewrite proof-2 in a
+-- general technique used in both cases. Let's rewrite proof2 in a
 -- different fassion to see closely what is happening at each
--- step. Inlining lemmas A and B into proof-2 gives:
+-- step. Inlining lemmas A and B into proof2 gives:
 --
---   proof-2i : (l1 r1 l2 r2 : Nat) → Succ (l2 + (r2  + Succ (l1 + r1)))
---                                  :~: Succ ((l1 + r1) + Succ (l2 + r2))
---   proof-2i l1 r1 l2 r2 =
---     cong Succ (trans (+assoc l2 r2 (Succ (l1 + r1)))
---              (trans (sym (+Succ (l2 + r2) (l1 + r1)))
---              (trans (cong Succ (+comm (l2 + r2) (l1 + r1)))
---                     (+Succ (l1 + r1) (l2 + r2))))
+--   proof2i :: SNat l1 -> SNat r1 -> SNat l2 -> SNat r2 ->
+--          Succ (l2 :+ (r2  :+ Succ (l1 :+ r1)))
+--                :~: Succ ((l1 :+ r1) :+ Succ (l2 :+ r2))
+--   proof2i l1 r1 l2 r2 =
+--     cong SSucc (trans (plusAssoc l2 r2 (SSucc (l1 :%+ r1)))
+--                (trans (sym (plusSucc (l2 :%+ r2) (l1 :%+ r1)))
+--                (trans (cong Succ (plusComm (l2 :%+ r2) (l1 :%+ r1)))
+--                       (plusSucc (l1 :%+ r1) (l2 :%+ r2))))
 --
 -- We see a lot of properties combined using transitivity. In general,
 -- if we have to prove:
@@ -329,32 +329,30 @@ proof2 l1 r1 l2 r2 = cong SSucc (lemmaA l2 r2 (l1 %:+ r1))
 --  b :~:[ proof 2 ]
 --  c :~:[ proof 3 ]
 --  d :~:[ proof 4 ]
---  e ∎
+--  e QED
 --
 -- Where proof 1 proves a :~: b, proof 2 proves b :~: c and so on. In our
 -- particular case this will be:
 --
---  Succ  (l2 + (r2 + Succ (l1 + r1))) :~:[ cong Succ ]
--- [suc]  l2 + (r2 + Succ (l1 + r1))  :~:[+assoc l2 r2 (Succ (l1 + r1))]
--- [suc] (l2 + r2) + Succ (l1 + r1)   :~:[ sym (+Succ (l2 + r2) (l1 + r1))]
--- [suc] Succ ((l2 + r2) + (l1 + r1)) :~:[ cong Succ (+comm (l2 + r2) (l1 + r1)) ]
--- [suc] Succ ((l1 + r1) + (l2 + r2)) :~:[+Succ (l1 + r1) (l2 + r2) ]
--- [suc] (l1 + r1) + Succ (l2 + r2) ∎
+--  Succ  (l2 + (r2 + Succ (l1 + r1))) :~:[ cong SSucc ]
+-- [Succ]  l2 + (r2 + Succ (l1 + r1))  :~:[ plusAssoc l2 r2 (Succ (l1 :%+ r1))]
+-- [Succ] (l2 + r2) + Succ (l1 + r1)   :~:[ sym (plusSucc (l2 :%+ r2) (l1 :%+ r1))]
+-- [Succ] Succ ((l2 + r2) + (l1 + r1)) :~:[ cong SSucc (plusComm (l2 :%+ r2) (l1 :%+ r1)) ]
+-- [Succ] Succ ((l1 + r1) + (l2 + r2)) :~:[ plusSucc (l1 :%+ r1) (l2 :%+ r2) ]
+-- [Succ] (l1 + r1) + Succ (l2 + r2) QED
 --
--- We use [suc] to denote that everything happens under a call to suc
--- (thanks to using congruence). Compare this notation with code of
--- proof-2i.
+-- We use [Succ] to denote that everything happens under a call to Succ
+-- (using congruence). Compare this notation with code of proof-2i.
 
 
 -- Note [Notation in merge]
 -- ~~~~~~~~~~~~~~~~~~~~~~~~
 --
--- merge uses different notation than the proofs. We use l1, r1, l2
--- and r2 to denote the respective subtrees and l1-rank, r1-rank,
--- l2-rank and r2-rank to denote their ranks. We use h1 and h2 to
+-- merge uses different notation than the proofs above. We use l1, r1, l2
+-- and r2 to denote the respective subtrees and l1Rank, r1Rank,
+-- l2Rank and r2Rank to denote their ranks. We use h1 and h2 to
 -- denote heaps.
-merge :: forall (l :: Nat) (r :: Nat).
-         Heap l -> Heap r -> Heap (l :+ r)
+merge :: Heap l -> Heap r -> Heap (l :+ r)
 merge  Empty h2 = h2 -- See [merge, proof 0a]
 merge h1 Empty
   = gcastWith (sym (plusZero (rank h1))) h1 -- See [merge, proof 0b]
@@ -374,35 +372,32 @@ merge h1@(Node p1 _ l1 r1)
             h2Rank = rank h2
 
 -- We require that inserting an element into the heap increases its
--- size by one. As previously we define insert as merge and a
--- singleton heap. Size of singleton heap is (Succ zero), while already
+-- size by one. As previously we define insert as merge with a
+-- singleton heap. Size of singleton heap is (Succ Zero), while already
 -- existing heap has size n. According to definition of merge the
 -- resulting heap will therefore have size:
 --
---   (Succ zero) + n
+--   (Succ Sero) + n
 --
 -- By definition of + this can be normalized to:
 --
---   Succ (zero + n)
+--   Succ (Sero + n)
 --
 -- and finally to
 --
 --   Succ n
 --
--- Which is size we require in the type signature. This means we don't
--- need any additional proof because expected result follows from
--- definitions.
-insert :: forall (n :: Nat).
-          Priority -> Heap n -> Heap (Succ n)
+-- Which is the size we require in the type signature. This means we
+-- don't need any additional proof because expected result follows
+-- from definitions.
+insert :: Priority -> Heap n -> Heap (Succ n)
 insert p h = merge (singleton p) h
 
--- By indexing heap with its size we can finally have means to ensure
+-- By indexing heap with its size we finally have means to ensure
 -- that heap passed to findMin or deleteMin is not empty.
-findMin :: forall (n :: Nat).
-           Heap (Succ n) -> Priority
+findMin :: Heap (Succ n) -> Priority
 findMin (Node p _ _ _) = p
 
 
-deleteMin :: forall (n :: Nat).
-             Heap (Succ n) -> Heap n
+deleteMin :: Heap (Succ n) -> Heap n
 deleteMin (Node _ _ l r) = merge l r
