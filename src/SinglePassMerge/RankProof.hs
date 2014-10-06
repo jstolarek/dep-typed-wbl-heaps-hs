@@ -1,12 +1,12 @@
-----------------------------------------------------------------------
--- Copyright: 2014, Jan Stolarek, Politechnika Łódzka     --
---                                                                  --
--- License: See LICENSE file in root of the repo                    --
--- Repo address: https://github.com/jstolarek/dep-typed-wbl-heaps-hs   --
---                                                                  --
--- Weight biased leftist heap that proves rank invariant and uses   --
--- a single-pass merging algorithm.                                 --
-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+-- Copyright: 2014, Jan Stolarek, Politechnika Łódzka                --
+--                                                                   --
+-- License: See LICENSE file in root of the repo                     --
+-- Repo address: https://github.com/jstolarek/dep-typed-wbl-heaps-hs --
+--                                                                   --
+-- Weight biased leftist heap that proves rank invariant and uses    --
+-- a single-pass merging algorithm.                                  --
+-----------------------------------------------------------------------
 
 {-# LANGUAGE DataKinds           #-}
 {-# LANGUAGE GADTs               #-}
@@ -15,8 +15,6 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeOperators       #-}
 module SinglePassMerge.RankProof where
-
-
 
 import Basics
 -- We import rank proofs conducted earlier - they will be re-used.
@@ -32,7 +30,7 @@ rank Empty          = SZero
 rank (Node _ _ l r) = SSucc (rank l %:+ rank r)
 
 -- Note [Proving rank invariant in single-pass merge]
--- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 --
 -- Recall that in TwoPassMerge.RankProof we need to prove that:
 --
@@ -45,9 +43,9 @@ rank (Node _ _ l r) = SSucc (rank l %:+ rank r)
 --     b) constructing a node by swapping l and r subtrees (when rank
 --        of r was greater than rank of l). We had to prove that:
 --
---                    suc (a + b) :~: suc (b + a)
+--                    Succ (a + b) :~: Succ (b + a)
 --
---        This proof is supplied by a function makeT-lemma.
+--        This proof is supplied by function makeTlemma.
 --
 --  2) resulting heap produced by merge has correct size. Merge has 4
 --     cases (see [Two-pass merging algorithm]):
@@ -59,23 +57,23 @@ rank (Node _ _ l r) = SSucc (rank l %:+ rank r)
 --
 --                 h1 :~: h1 + 0
 --
---        This proof is supplied by +0 (in Basics.Reasoning) and is
---        inlined in the definition of merge. See [merge, proof 0b].
+--        This proof is supplied by plusZero (in Basics.Reasoning) and is
+--        called in the definition of merge. See [merge, proof 0b].
 --
 --     c) priority p1 is higher than p2. We had to prove:
 --
---            suc (l1 + (r1 + suc (l2 + r2)))
---                           :~: suc ((l1 + r1) + suc (l2 + r2))
+--            Succ (l1 + (r1 + Succ (l2 + r2)))
+--                           :~: Succ ((l1 + r1) + Succ (l2 + r2))
 --
---        This proof is supplied by proof-1 (renamed to proof-1a in
+--        This proof is supplied by proof1 (renamed to proof1a in
 --        this module). See [merge, proof 1] for details.
 --
 --     d) priority p2 is higher than p1. We had to prove:
 --
---            suc (l2 + (r2  + suc (l1 + r1)))
---                           :~: suc ((l1 + r1) + suc (l2 + r2))
+--            Succ (l2 + (r2  + Succ (l1 + r1)))
+--                           :~: Succ ((l1 + r1) + Succ (l2 + r2))
 --
---        This proof is supplied by proof-2 (renamed to proof-2a in
+--        This proof is supplied by proof2 (renamed to proof2a in
 --        this module). See [merge, proof 2] for details.
 --
 -- Now that we inline makeT into merge and we will have to construct
@@ -94,33 +92,33 @@ rank (Node _ _ l r) = SSucc (rank l %:+ rank r)
 --      makeT would not swap left and right when creating a node from
 --      parameters passed to it. Required proof is:
 --
---            suc (l1 + (r1 + suc (l2 + r2)))
---                           :~: suc ((l1 + r1) + suc (l2 + r2))
+--            Succ (l1 + (r1 + Succ (l2 + r2)))
+--                           :~: Succ ((l1 + r1) + Succ (l2 + r2))
 --
 --   2) case d described in [Single-pass merging algorithm]. Call to
 --      makeT would swap left and right when creating a node from
 --      parameters passed to it. Required proof is:
 --
---            suc ((r1 + suc (l2 + r2)) + l1)
---                           :~: suc ((l1 + r1) + suc (l2 + r2))
+--            Succ ((r1 + Succ (l2 + r2)) + l1)
+--                           :~: Succ ((l1 + r1) + Succ (l2 + r2))
 --
 --   3) case e described in [Single-pass merging algorithm]. Call to
 --      makeT would not swap left and right when creating a node from
 --      parameters passed to it. Required proof is:
 --
---            suc (l2 + (r2  + suc (l1 + r1)))
---                           :~: suc ((l1 + r1) + suc (l2 + r2))
+--            Succ (l2 + (r2  + Succ (l1 + r1)))
+--                           :~: Succ ((l1 + r1) + Succ (l2 + r2))
 --
 --   4) case f described in [Single-pass merging algorithm]. Call to
 --      makeT would swap left and right when creating a node from
 --      parameters passed to it. Required proof is:
 --
---            suc ((r2 + suc (l1 + r1)) + l2)
---                           :~: suc ((l1 + r1) + suc (l2 + r2))
+--            Succ ((r2 + Succ (l1 + r1)) + l2)
+--                           :~: Succ ((l1 + r1) + Succ (l2 + r2))
 --
 -- First of all we must note that proofs required in cases 1 and 3 are
 -- exactly the same as in the two-pass merging algorithm. This allows
--- us to re-use the old proofs (renamed to proof-1a and proof-2a
+-- us to re-use the old proofs (renamed to proof1a and proof2a
 -- here). What about proofs of cases 2 and 4? One thing we could do is
 -- construct proofs of these properties using technique described in
 -- Note [Constructing equality proofs using transitivity]. This is
@@ -129,63 +127,60 @@ rank (Node _ _ l r) = SSucc (rank l %:+ rank r)
 -- 2 and 4 are very similar to properties 1 and 3 (we omit the RHS
 -- since it is always the same):
 --
---  1: suc (l1 + (r1 + suc (l2 + r2)))
---  2: suc ((r1 + suc (l2 + r2)) + l1)
+--  1: Succ (l1 + (r1 + Succ (l2 + r2)))
+--  2: Succ ((r1 + Succ (l2 + r2)) + l1)
 --
---  3: suc (l2 + (r2  + suc (l1 + r1)))
---  4: suc ((r2 + suc (l1 + r1)) + l2)
+--  3: Succ (l2 + (r2  + Succ (l1 + r1)))
+--  4: Succ ((r2 + Succ (l1 + r1)) + l2)
 --
 -- The only difference between 1 and 2 and between 3 and 4 is the
--- order of parameters inside outer suc. This is expected: in cases 2
--- and 4 we swap left and right subtree passed to node and this is
--- reflected in the types. Now, if we could prove that:
+-- order of parameters inside the outer Succ. This is expected: in
+-- cases 2 and 4 we swap left and right subtree passed to node and
+-- this is reflected in the types. Now, if we could prove that:
 --
---            suc ((r1 + suc (l2 + r2)) + l1)
---                           :~: suc (l1 + (r1 + suc (l2 + r2)))
+--            Succ ((r1 + Succ (l2 + r2)) + l1)
+--                           :~: Succ (l1 + (r1 + Succ (l2 + r2)))
 --
 -- and
 --
---            suc ((r2 + suc (l1 + r1)) + l2)
---                           :~: suc (l2 + (r2  + suc (l1 + r1)))
+--            Succ ((r2 + Succ (l1 + r1)) + l2)
+--                           :~: Succ (l2 + (r2  + Succ (l1 + r1)))
 --
 -- then we could use transitivity to combine these new proofs with old
--- proof-1a and proof-2a. If we abstract the parameters in the above
+-- proof1a and proof2a. If we abstract the parameters in the above
 -- equalities we see that the property we need to prove is:
 --
---                    suc (a + b) :~: suc (b + a)
+--                    Succ (a + b) :~: Succ (b + a)
 --
--- And that happens to be makeT-lemma! New version of merge was
+-- And that happens to be makeTlemma! New version of merge was
 -- created by inlining calls to make and now it turns out we can
 -- construct proofs of that implementation by using proofs of
 -- makeT. This leads us to very elegant solutions presented below.
 
 
-proof1a :: forall (l1 :: Nat) (r1 :: Nat) (l2 :: Nat) (r2 :: Nat).
-           Sing l1 -> Sing r1 -> Sing l2 -> Sing r2 ->
-           (Succ ( l1 :+ (r1 :+ Succ (l2 :+ r2))) :~: Succ ((l1 :+ r1) :+ Succ (l2 :+ r2)))
+proof1a :: SNat l1 -> SNat r1 -> SNat l2 -> SNat r2 ->
+           (Succ ( l1 :+ (r1 :+ Succ (l2 :+ r2)))
+                     :~: Succ ((l1 :+ r1) :+ Succ (l2 :+ r2)))
 proof1a = RP.proof1
 
-proof1b :: forall (l1 :: Nat) (r1 :: Nat) (l2 :: Nat) (r2 :: Nat).
-           Sing l1 -> Sing r1 -> Sing l2 -> Sing r2 ->
-           (Succ ((r1 :+ Succ (l2 :+ r2)) :+ l1) :~: (Succ ((l1 :+ r1) :+ Succ (l2 :+ r2))))
+proof1b :: SNat l1 -> SNat r1 -> SNat l2 -> SNat r2 ->
+           (Succ ((r1 :+ Succ (l2 :+ r2)) :+ l1)
+                     :~: (Succ ((l1 :+ r1) :+ Succ (l2 :+ r2))))
 proof1b l1 r1 l2 r2 = trans (makeTlemma (r1 %:+ SSucc (l2 %:+ r2)) l1)
                             (proof1a l1 r1 l2 r2)
 
-proof2a :: forall (l1 :: Nat) (r1 :: Nat) (l2 :: Nat) (r2 :: Nat).
-       Sing l1 -> Sing r1 -> Sing l2 -> Sing r2 ->
-       (Succ (l2 :+ (r2  :+ Succ (l1 :+ r1))))
-       :~: (Succ ((l1 :+ r1) :+ Succ (l2 :+ r2)))
+proof2a :: SNat l1 -> SNat r1 -> SNat l2 -> SNat r2 ->
+           (Succ (l2 :+ (r2  :+ Succ (l1 :+ r1))))
+                     :~: (Succ ((l1 :+ r1) :+ Succ (l2 :+ r2)))
 proof2a = RP.proof2
 
-
-proof2b :: forall (l1 :: Nat) (r1 :: Nat) (l2 :: Nat) (r2 :: Nat).
-           Sing l1 -> Sing r1 -> Sing l2 -> Sing r2 ->
+proof2b :: SNat l1 -> SNat r1 -> SNat l2 -> SNat r2 ->
            (Succ ((r2 :+ Succ (l1 :+ r1)) :+ l2)
-                               :~: Succ ((l1 :+ r1) :+ Succ (l2 :+ r2)))
+                     :~: Succ ((l1 :+ r1) :+ Succ (l2 :+ r2)))
 proof2b l1 r1 l2 r2 = trans (makeTlemma (r2 %:+ SSucc (l1 %:+ r1)) l2)
                             (proof2a l1 r1 l2 r2)
 
--- We can now use proof-1a, proof-1b, proof-2a and proof-2b in
+-- We can now use proof1a, proof1b, proof2a and proof2b in
 -- definition of merge.
 merge :: Heap l -> Heap r -> Heap (l :+ r)
 merge Empty h2 = h2

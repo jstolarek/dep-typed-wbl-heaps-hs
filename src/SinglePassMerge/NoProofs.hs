@@ -1,22 +1,22 @@
-----------------------------------------------------------------------
--- Copyright: 2014, Jan Stolarek, Politechnika Łódzka     --
---                                                                  --
--- License: See LICENSE file in root of the repo                    --
--- Repo address: https://github.com/jstolarek/dep-typed-wbl-heaps-hs   --
---                                                                  --
--- Basic implementation of weight-biased leftist heap. No proofs    --
--- and no dependent types. Uses a single-pass merging algorithm.    --
---                                                                  --
--- Now we will modify our implementation by turning a two-pass      --
--- merging algorithm into a single-pass one. We will do this by     --
--- inlining makeT into merge. See [Single-pass merging algorithm]   --
--- for a detailed description of new algorithm. Since merge         --
--- function will be the only thing that changes we will not repeat  --
--- singleton, findMin and deleteMin functions - they are exactly    --
--- same as they were in case of two-pass merging algorithm. All     --
--- data declaration also remain the same. We will focus our         --
--- attention only on merging.                                       --
-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+-- Copyright: 2014, Jan Stolarek, Politechnika Łódzka                --
+--                                                                   --
+-- License: See LICENSE file in root of the repo                     --
+-- Repo address: https://github.com/jstolarek/dep-typed-wbl-heaps-hs --
+--                                                                   --
+-- Basic implementation of weight-biased leftist heap. No proofs     --
+-- and no dependent types. Uses a single-pass merging algorithm.     --
+--                                                                   --
+-- Now we will modify our implementation by turning a two-pass       --
+-- merging algorithm into a single-pass one. We will do this by      --
+-- inlining makeT into merge. See [Single-pass merging algorithm]    --
+-- for a detailed description of new algorithm. Since merge          --
+-- function will be the only thing that changes we will not repeat   --
+-- singleton, findMin and deleteMin functions - they are exactly the --
+-- same as they were in case of two-pass merging algorithm. All      --
+-- data declaration also remain the same. We will focus our          --
+-- attention on merging.                                        --
+-----------------------------------------------------------------------
 
 {-# LANGUAGE GADTs                #-}
 {-# LANGUAGE KindSignatures       #-}
@@ -101,16 +101,10 @@ rank (Node _ r _ _) = r
 -- know one of this relations:
 --
 --   1) if priority p1 is higher than p2 then we need to know whether
---      l1 ≥ r1 + h2
+--      l1 >= r1 + h2
 --
 --   2) if priority p2 is higher than p1 then we need to know whether
---      l2 ≥ r2 + h1
---
--- Computing these relations at once allows us to reduce code
--- verbosity at the price of doing some extra computations. In a
--- practical application we would most likely prefer performance over
--- code readibility, but I believe that for demonstration purposes it
--- is better to have shorter code.
+--      l2 >= r2 + h1
 
 merge :: Heap -> Heap -> Heap
 merge Empty h2 = h2 -- See [Single-pass merging algorithm]
