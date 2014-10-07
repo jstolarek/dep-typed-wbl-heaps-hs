@@ -74,3 +74,5 @@ I originally implemented verified weight-biased leftist heap in
 Agda. This implementation is available
 [here](https://github.com/jstolarek/dep-typed-wbl-heaps).
 
+I also wrote a [companion blog post]
+(http://lambda.jstolarek.com/2014/10/weight-biased-leftist-heaps-verified-in-haskell-using-dependent-types/).
