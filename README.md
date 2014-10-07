@@ -4,28 +4,29 @@ Weight-biased leftist heaps verified in Haskell using dependent types
 This repo contains implementation of weight-biased leftist heap data
 structure verified in Haskell using dependent types. This package is
 intended to be a tutorial and technology demonstration. It is not
-intended to be used in real-world application (but if you find such a
+intended to be used in real-world applications (but if you find such a
 use please let me know).
 
 Weight-biased leftist heap is a binary tree that satisfies two
 invariants:
 
-  1. Priority invariant: priority of every node is higher that
+  1. Priority invariant: priority of every node is higher than
      priority of its children. (This property is true for heaps in
      general).
 
-  2. Rank invariant: for every node size of its left child is nor
+  2. Rank invariant: for every node size of its left child is not
      smaller than the size of its right child.
 
 These two invariants give us a data structure that provides O(1)
 access to element with the highest priority and O(log2 n) insert and
-merge operations. See Chris Okasaki's "Purely Functional Data
-Structures" for more discussion.
+merge operations. See chapter 3 of Chris Okasaki's "Purely Functional
+Data Structures" for more discussion.
 
 The main purpose of this implementation is to explain how proofs of
-the two above invariants are constructed. You'll find lots of
+the two above invariants are constructed in Haskell. (The ideas
+convey to other languages with dependent types.) You'll find lots of
 comments in the source code. I assume that you already have been
-exposed to basic ideas of proofs with dependent types. In particular
+exposed to basics of proofs with dependent types. In particular
 you should be familiar with:
 
   * the concept of data-as-evidence as described in "Why Dependent
@@ -33,7 +34,7 @@ you should be familiar with:
     paper
 
   * singleton types as described in "Dependently Typed Programming
-    with Singletons" paper. I don't make heave use of singletons but
+    with Singletons" paper. I don't make heavy use of singletons but
     you should understand why do we need encodings like singleton
     types in Haskell
 
@@ -42,7 +43,7 @@ you should be familiar with:
     Altenkirch](http://www.cs.nott.ac.uk/~txa/g53cfr/)
 
 You should begin studying of this repo by getting familiar with
-modules in `Basics` directory. Go to `TwoPassMerge` directory and
+modules in `Basics` directory. Then go to `TwoPassMerge` directory and
 begin with `NoProofs` module followed by `RankProof` and
 `PriorityProof` (in any order) and finish with `CombinedProofs`. Then
 move to `SinglePassMerge` and study the modules in the same order as
