@@ -28,6 +28,7 @@ import Basics.Ordering
 import Basics.Reasoning
 import Basics.Sing
 import Basics.Unreachable
+import Prelude (undefined)
 
 -- Rank of a weight biased leftist heap is defined as number of nodes
 -- in a heap. In other words it is size of a tree used to represent a

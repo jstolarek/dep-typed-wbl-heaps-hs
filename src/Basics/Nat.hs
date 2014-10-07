@@ -86,9 +86,16 @@ Zero     + m = m
 (Succ n) + m = Succ (n + m)
 
 -- type-level addition
-type family (a :: Nat) :+ (b :: Nat) :: Nat where
-    Zero   :+ n = n
-    Succ n :+ m = Succ (n :+ m)
+type family (a :: Nat) :+ (b :: Nat) :: Nat
+type instance Zero   :+ n = n
+type instance Succ n :+ m = Succ (n :+ m)
+-- alternatively, we could use a closed type family:
+--
+--  type family (a :: Nat) :+ (b :: Nat) :: Nat where
+--     Zero   :+ n = n
+--     Succ n :+ m = Succ (n :+ m)
+--
+-- but that would be incompatible with GHC 7.6
 
 -- singletons addition
 (%:+) :: SNat a -> SNat b -> SNat (a :+ b)

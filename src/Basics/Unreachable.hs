@@ -20,7 +20,10 @@
 -- fixed I can easily locate all unreachable equations in this       --
 -- project.                                                          --
 -----------------------------------------------------------------------
+{-# LANGUAGE NoImplicitPrelude #-}
 module Basics.Unreachable where
+
+import Prelude (undefined)
 
 unreachable :: a
 unreachable = undefined
