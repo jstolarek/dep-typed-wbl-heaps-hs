@@ -20,7 +20,9 @@ invariants:
 These two invariants give us a data structure that provides O(1)
 access to element with the highest priority and O(log2 n) insert and
 merge operations. See chapter 3 of Chris Okasaki's "Purely Functional
-Data Structures" for more discussion.
+Data Structures" for more discussion. Note that my implementation
+represents priorities using natural numbers where 0 is the highest
+priority (See `Basics` and `Nat` modules).
 
 The main purpose of this implementation is to explain how proofs of
 the two above invariants are constructed in Haskell. (The ideas
