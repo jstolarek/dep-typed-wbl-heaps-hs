@@ -47,8 +47,8 @@ trans Refl Refl = Refl
 cong :: (Sing a -> Sing b) -> (a :~: c) -> (f a :~: f c)
 cong _ Refl = Refl
 
--- Agda's equivalent of gcastWith is subst, used for type-safe casts
--- when we have a proof of equality of two types. gcast with is more
+-- Agda's equivalent of subst is gcastWith, used for type-safe casts
+-- when we have a proof of equality of two types. gcastWith is more
 -- convenient to use than Agda's subst because it doesn't require the
 -- type constructor to be passed in. (See my Agda implementation if
 -- this doesn't make sense).
