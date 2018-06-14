@@ -274,7 +274,7 @@ heap'' = insertB' sZero   GeZ
 findMin :: Heap p -> Nat
 findMin Empty            = undefined
 findMin (Node p _ _ _ _) = fromSing p
--- We findMin however we also encounter a rather unexpected
+-- With findMin however we encounter a rather unexpected
 -- obstacle. Heap stores singletonized Nats. It would be therefore
 -- natural to expect that findMin function returns these singleton
 -- values, for example so that we can later insert them into another
