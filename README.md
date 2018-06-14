@@ -1,6 +1,8 @@
 Weight-biased leftist heaps verified in Haskell using dependent types
 =====================================================================
 
+**IMPORTANT:** This repository is now [hosted on BitBucket](https://bitbucket.org/jstolarek/dep-typed-wbl-heaps-hs).
+
 This repo contains implementation of weight-biased leftist heap data
 structure verified in Haskell using dependent types. This package is
 intended to be a tutorial and technology demonstration. It is not
